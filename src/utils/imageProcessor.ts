@@ -243,7 +243,9 @@ export const resizeImage = async (
           .toFile(thumbPath);
         break;
       case 'gif':
-        await sharpInstance.gif(formatOptions as sharp.GifOptions).toFile(thumbPath);
+        await sharpInstance
+          .gif(formatOptions as sharp.GifOptions)
+          .toFile(thumbPath);
         break;
       case 'tiff':
         await sharpInstance

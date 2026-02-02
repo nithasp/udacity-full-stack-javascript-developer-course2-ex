@@ -22,5 +22,5 @@
     "es6": true,
     "jasmine": true
   },
-  "ignorePatterns": ["dist", "node_modules"]
+  "ignorePatterns": ["dist", "node_modules", "spec"]
 }
