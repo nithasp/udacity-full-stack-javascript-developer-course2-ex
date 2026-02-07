@@ -43,10 +43,7 @@ Resize images with query parameters
 - `format` - Output format (jpg, png, webp, gif, tiff, avif)
 
 **Examples:**
-```
-http://localhost:5000/api/images?filename=argentina&width=200&height=200
-http://localhost:5000/api/images?filename=photo&width=300&height=300&format=webp
-```
+http://localhost:5000/api/images?filename=beach&width=300&height=300
 
 ## Available Scripts
 
@@ -60,16 +57,29 @@ npm run format   # Format code
 ```
 
 ## Project Structure
-
 ```
 src/
 ├── index.ts                    # Express server
-├── routes/api/images.ts        # Image endpoint
-├── utils/imageProcessor.ts     # Image processing logic
-└── tests/                      # API and unit tests
+├── interfaces/
+│   └── IImageProcessor.ts      # Image processor interface
+├── routes/
+│   └── api/
+│       └── images.ts           # Image endpoint
+├── utils/
+│   └── imageProcessor.ts       # Image processing logic
+└── tests/
+    ├── integration/
+    │   └── api.spec.ts         # API integration tests
+    └── unit/
+        └── imageProcessor.spec.ts  # Unit tests
 assets/
 ├── full/                       # Original images
 └── thumb/                      # Cached resized images
+spec/
+├── helpers/
+│   └── reporter.ts             # Jasmine test reporter
+└── support/
+    └── jasmine.json            # Jasmine configuration
 ```
 
 ## How It Works
