@@ -3,8 +3,8 @@ import {
   validateResizeParams,
   fileExists,
   ensureDirectoryExists,
-  ResizeParams,
 } from '../utils/imageProcessor';
+import { IResizeParams } from '../interfaces/IImageProcessor';
 import path from 'path';
 import fs from 'fs/promises';
 
@@ -59,7 +59,7 @@ describe('Image Processor Utility Tests', () => {
 
   describe('validateResizeParams', () => {
     it('should return valid for correct parameters', () => {
-      const params: ResizeParams = {
+      const params: IResizeParams = {
         filename: 'test',
         width: 100,
         height: 100,
@@ -70,7 +70,7 @@ describe('Image Processor Utility Tests', () => {
     });
 
     it('should return invalid for missing filename', () => {
-      const params: ResizeParams = {
+      const params: IResizeParams = {
         filename: '',
         width: 100,
         height: 100,
@@ -92,7 +92,7 @@ describe('Image Processor Utility Tests', () => {
     });
 
     it('should return invalid for negative dimensions', () => {
-      const params: ResizeParams = {
+      const params: IResizeParams = {
         filename: 'test',
         width: -100,
         height: 100,
@@ -103,7 +103,7 @@ describe('Image Processor Utility Tests', () => {
     });
 
     it('should return invalid for zero dimensions', () => {
-      const params: ResizeParams = {
+      const params: IResizeParams = {
         filename: 'test',
         width: 0,
         height: 100,
@@ -156,7 +156,7 @@ describe('Image Processor Utility Tests', () => {
 
   describe('resizeImage', () => {
     it('should successfully resize an existing image', async () => {
-      const params: ResizeParams = {
+      const params: IResizeParams = {
         filename: 'test',
         width: 50,
         height: 50,
@@ -170,7 +170,7 @@ describe('Image Processor Utility Tests', () => {
     });
 
     it('should use cached image on subsequent requests', async () => {
-      const params: ResizeParams = {
+      const params: IResizeParams = {
         filename: 'test',
         width: 75,
         height: 75,
@@ -196,7 +196,7 @@ describe('Image Processor Utility Tests', () => {
     });
 
     it('should return error for non-existent image', async () => {
-      const params: ResizeParams = {
+      const params: IResizeParams = {
         filename: 'nonexistent',
         width: 100,
         height: 100,
@@ -209,7 +209,7 @@ describe('Image Processor Utility Tests', () => {
     });
 
     it('should return error for invalid width', async () => {
-      const params: ResizeParams = {
+      const params: IResizeParams = {
         filename: 'test',
         width: -50,
         height: 50,
@@ -222,7 +222,7 @@ describe('Image Processor Utility Tests', () => {
     });
 
     it('should return error for invalid height', async () => {
-      const params: ResizeParams = {
+      const params: IResizeParams = {
         filename: 'test',
         width: 50,
         height: 0,

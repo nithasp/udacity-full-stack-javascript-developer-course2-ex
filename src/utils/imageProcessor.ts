@@ -1,6 +1,10 @@
 import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs/promises';
+import {
+  IResizeParams,
+  IProcessingResult,
+} from '../interfaces/IImageProcessor';
 
 /**
  * Supported image formats
@@ -14,26 +18,6 @@ export const SUPPORTED_FORMATS = [
   'tiff',
   'avif',
 ] as const;
-
-/**
- * Interface for image resize parameters
- */
-export interface ResizeParams {
-  filename: string;
-  width: number;
-  height: number;
-  format?: string; // Optional output format
-}
-
-/**
- * Interface for image processing result
- */
-export interface ProcessingResult {
-  success: boolean;
-  outputPath?: string;
-  error?: string;
-  cached?: boolean;
-}
 
 /**
  * Validates if a file exists at the given path
@@ -55,7 +39,7 @@ export const fileExists = async (filePath: string): Promise<boolean> => {
  * @returns Object with isValid flag and optional error message
  */
 export const validateResizeParams = (
-  params: ResizeParams
+  params: IResizeParams
 ): { isValid: boolean; error?: string } => {
   const { filename, width, height } = params;
 
@@ -157,11 +141,11 @@ export const getFormatOptions = (
  * Resizes an image using Sharp library
  * Supports multiple input formats: jpg, jpeg, png, webp, gif, tiff, avif
  * @param params - Image resize parameters
- * @returns Promise<ProcessingResult> - Result of the processing operation
+ * @returns Promise<IProcessingResult> - Result of the processing operation
  */
 export const resizeImage = async (
-  params: ResizeParams
-): Promise<ProcessingResult> => {
+  params: IResizeParams
+): Promise<IProcessingResult> => {
   try {
     const { filename, width, height, format } = params;
 

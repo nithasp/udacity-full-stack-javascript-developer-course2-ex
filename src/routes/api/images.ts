@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
-import { resizeImage, ResizeParams } from '../../utils/imageProcessor';
+import { resizeImage } from '../../utils/imageProcessor';
+import { IResizeParams } from '../../interfaces/IImageProcessor';
 
 const router = express.Router();
 
@@ -39,7 +40,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
     }
 
     // Prepare resize parameters
-    const resizeParams: ResizeParams = {
+    const resizeParams: IResizeParams = {
       filename: filename as string,
       width: Number(width),
       height: Number(height),
