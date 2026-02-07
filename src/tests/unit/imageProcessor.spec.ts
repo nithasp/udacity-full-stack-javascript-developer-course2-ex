@@ -3,8 +3,8 @@ import {
   validateResizeParams,
   fileExists,
   ensureDirectoryExists,
-} from '../utils/imageProcessor';
-import { IResizeParams } from '../interfaces/IImageProcessor';
+} from '../../utils/imageProcessor';
+import { IResizeParams } from '../../interfaces/IImageProcessor';
 import path from 'path';
 import fs from 'fs/promises';
 

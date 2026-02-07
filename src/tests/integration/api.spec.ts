@@ -1,8 +1,8 @@
 import supertest from 'supertest';
-import app from '../index';
+import app from '../../index';
 import path from 'path';
 import fs from 'fs/promises';
-import { ensureDirectoryExists } from '../utils/imageProcessor';
+import { ensureDirectoryExists } from '../../utils/imageProcessor';
 
 const request = supertest(app);
 

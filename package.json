@@ -9,6 +9,8 @@
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
     "test": "npm run build:test && npm run jasmine",
+    "test:unit": "npm run build:test && cross-env NODE_ENV=test jasmine --filter=unit",
+    "test:integration": "npm run build:test && cross-env NODE_ENV=test jasmine --filter=integration",
     "jasmine": "cross-env NODE_ENV=test jasmine",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"src/**/*.ts\""
