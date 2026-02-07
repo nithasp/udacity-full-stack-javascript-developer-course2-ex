@@ -4,20 +4,16 @@ import imagesRouter from './routes/api/images';
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Logging middleware
 app.use((req: Request, _res: Response, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
 });
 
-// API Routes
 app.use('/api/images', imagesRouter);
 
-// Root endpoint
 app.get('/', (_req: Request, res: Response): void => {
   res.json({
     message: 'Image Processing API',
@@ -43,7 +39,6 @@ app.get('/', (_req: Request, res: Response): void => {
   });
 });
 
-// 404 handler
 app.use((req: Request, res: Response): void => {
   res.status(404).json({
     error: 'Not Found',
@@ -51,7 +46,6 @@ app.use((req: Request, res: Response): void => {
   });
 });
 
-// Start server only if not in test environment
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, (): void => {
     console.log(`Server is running on http://localhost:${PORT}`);

@@ -1,6 +1,5 @@
 import { SpecReporter, StacktraceOption } from 'jasmine-spec-reporter';
 
-// Clear default reporter and add spec reporter for better test output
 jasmine.getEnv().clearReporters();
 jasmine.getEnv().addReporter(
   new SpecReporter({
@@ -9,9 +8,7 @@ jasmine.getEnv().addReporter(
       displaySuccessful: true,
       displayFailed: true,
     },
-    colors: {
-      enabled: true,
-    },
+    colors: { enabled: true },
     prefixes: {
       successful: '  ✓ ',
       failed: '  ✗ ',

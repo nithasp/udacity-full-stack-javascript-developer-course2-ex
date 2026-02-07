@@ -6,7 +6,7 @@ import { ensureDirectoryExists } from '../../utils/imageProcessor';
 
 const request = supertest(app);
 
-describe('API Endpoint Tests', () => {
+describe('[integration] API Endpoint Tests', () => {
   const testImagePath = path.join(
     process.cwd(),
     'assets',
@@ -15,12 +15,10 @@ describe('API Endpoint Tests', () => {
   );
   const thumbDir = path.join(process.cwd(), 'assets', 'thumb');
 
-  // Setup: Create a test image before running tests
   beforeAll(async () => {
     const fullDir = path.join(process.cwd(), 'assets', 'full');
     await ensureDirectoryExists(fullDir);
 
-    // Create a minimal valid JPEG file for testing
     const minimalJpeg = Buffer.from([
       0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01,
       0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xff, 0xdb, 0x00, 0x43,
@@ -41,12 +39,9 @@ describe('API Endpoint Tests', () => {
     await fs.writeFile(testImagePath, minimalJpeg);
   });
 
-  // Cleanup: Remove test images after all tests
   afterAll(async () => {
     try {
       await fs.unlink(testImagePath);
-
-      // Clean up any generated thumbnails
       const thumbFiles = await fs.readdir(thumbDir);
       for (const file of thumbFiles) {
         if (file.startsWith('apitest_')) {
@@ -61,7 +56,6 @@ describe('API Endpoint Tests', () => {
   describe('GET /', () => {
     it('should return 200 and API information', async () => {
       const response = await request.get('/');
-
       expect(response.status).toBe(200);
       expect(response.body).toBeDefined();
       expect(response.body.message).toBe('Image Processing API');
@@ -73,7 +67,6 @@ describe('API Endpoint Tests', () => {
       const response = await request
         .get('/api/images')
         .query({ width: 100, height: 100 });
-
       expect(response.status).toBe(400);
       expect(response.body.error).toBeDefined();
       expect(response.body.message).toContain('filename');
@@ -83,7 +76,6 @@ describe('API Endpoint Tests', () => {
       const response = await request
         .get('/api/images')
         .query({ filename: 'apitest', height: 100 });
-
       expect(response.status).toBe(400);
       expect(response.body.error).toBeDefined();
       expect(response.body.message).toContain('width and height');
@@ -93,7 +85,6 @@ describe('API Endpoint Tests', () => {
       const response = await request
         .get('/api/images')
         .query({ filename: 'apitest', width: 100 });
-
       expect(response.status).toBe(400);
       expect(response.body.error).toBeDefined();
       expect(response.body.message).toContain('width and height');
@@ -103,7 +94,6 @@ describe('API Endpoint Tests', () => {
       const response = await request
         .get('/api/images')
         .query({ filename: 'nonexistent', width: 100, height: 100 });
-
       expect(response.status).toBe(404);
       expect(response.body.error).toBeDefined();
       expect(response.body.message).toContain('not found');
@@ -113,7 +103,6 @@ describe('API Endpoint Tests', () => {
       const response = await request
         .get('/api/images')
         .query({ filename: 'apitest', width: -50, height: 100 });
-
       expect(response.status).toBe(400);
       expect(response.body.error).toBeDefined();
     });
@@ -122,7 +111,6 @@ describe('API Endpoint Tests', () => {
       const response = await request
         .get('/api/images')
         .query({ filename: 'apitest', width: 100, height: 0 });
-
       expect(response.status).toBe(400);
       expect(response.body.error).toBeDefined();
     });
@@ -131,7 +119,6 @@ describe('API Endpoint Tests', () => {
       const response = await request
         .get('/api/images')
         .query({ filename: 'apitest', width: 'abc', height: 100 });
-
       expect(response.status).toBe(400);
       expect(response.body.error).toBeDefined();
     });
@@ -140,28 +127,22 @@ describe('API Endpoint Tests', () => {
       const response = await request
         .get('/api/images')
         .query({ filename: 'apitest', width: 100, height: 100 });
-
       expect(response.status).toBe(200);
       expect(response.type).toBe('image/jpeg');
     });
 
     it('should serve cached image on subsequent request', async () => {
-      // First request
       const firstResponse = await request
         .get('/api/images')
         .query({ filename: 'apitest', width: 150, height: 150 });
-
       expect(firstResponse.status).toBe(200);
 
-      // Second request - should serve from cache
       const secondResponse = await request
         .get('/api/images')
         .query({ filename: 'apitest', width: 150, height: 150 });
-
       expect(secondResponse.status).toBe(200);
       expect(secondResponse.type).toBe('image/jpeg');
 
-      // Verify the cached file exists
       const cachedPath = path.join(thumbDir, 'apitest_150x150.jpg');
       const exists = await fs
         .access(cachedPath)
@@ -174,7 +155,6 @@ describe('API Endpoint Tests', () => {
   describe('404 Handler', () => {
     it('should return 404 for non-existent routes', async () => {
       const response = await request.get('/nonexistent-route');
-
       expect(response.status).toBe(404);
       expect(response.body.error).toBe('Not Found');
     });

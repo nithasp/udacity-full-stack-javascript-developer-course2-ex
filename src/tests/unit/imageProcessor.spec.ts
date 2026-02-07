@@ -8,17 +8,14 @@ import { IResizeParams } from '../../interfaces/IImageProcessor';
 import path from 'path';
 import fs from 'fs/promises';
 
-describe('Image Processor Utility Tests', () => {
+describe('[unit] Image Processor Utility Tests', () => {
   const testImagePath = path.join(process.cwd(), 'assets', 'full', 'test.jpg');
   const thumbDir = path.join(process.cwd(), 'assets', 'thumb');
 
-  // Setup: Create a simple test image before running tests
   beforeAll(async () => {
     const fullDir = path.join(process.cwd(), 'assets', 'full');
     await ensureDirectoryExists(fullDir);
 
-    // Create a minimal valid JPEG file for testing
-    // This is a 1x1 pixel red JPEG image
     const minimalJpeg = Buffer.from([
       0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01,
       0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xff, 0xdb, 0x00, 0x43,
@@ -39,13 +36,9 @@ describe('Image Processor Utility Tests', () => {
     await fs.writeFile(testImagePath, minimalJpeg);
   });
 
-  // Cleanup: Remove test images after all tests
   afterAll(async () => {
     try {
-      // Clean up test image
       await fs.unlink(testImagePath);
-
-      // Clean up any generated thumbnails
       const thumbFiles = await fs.readdir(thumbDir);
       for (const file of thumbFiles) {
         if (file.startsWith('test_')) {
@@ -53,7 +46,7 @@ describe('Image Processor Utility Tests', () => {
         }
       }
     } catch (error) {
-      // Ignore errors during cleanup
+      // Ignore cleanup errors
     }
   });
 
@@ -149,7 +142,6 @@ describe('Image Processor Utility Tests', () => {
       await ensureDirectoryExists(testDir);
       const exists = await fileExists(testDir);
       expect(exists).toBe(true);
-      // Cleanup
       await fs.rmdir(testDir);
     });
   });
@@ -161,9 +153,7 @@ describe('Image Processor Utility Tests', () => {
         width: 50,
         height: 50,
       };
-
       const result = await resizeImage(params);
-
       expect(result.success).toBe(true);
       expect(result.outputPath).toBeDefined();
       expect(result.error).toBeUndefined();
@@ -175,21 +165,19 @@ describe('Image Processor Utility Tests', () => {
         width: 75,
         height: 75,
       };
-
-      // Clean up any existing cached file first
       const cachedPath = path.join(thumbDir, 'test_75x75.jpg');
+
       try {
         await fs.unlink(cachedPath);
       } catch {
         // Ignore if file doesn't exist
       }
 
-      // First call - creates the image
       const firstResult = await resizeImage(params);
+
       expect(firstResult.success).toBe(true);
       expect(firstResult.cached).toBe(false);
 
-      // Second call - should use cached version
       const secondResult = await resizeImage(params);
       expect(secondResult.success).toBe(true);
       expect(secondResult.cached).toBe(true);
@@ -201,9 +189,7 @@ describe('Image Processor Utility Tests', () => {
         width: 100,
         height: 100,
       };
-
       const result = await resizeImage(params);
-
       expect(result.success).toBe(false);
       expect(result.error).toContain('not found');
     });
@@ -214,9 +200,7 @@ describe('Image Processor Utility Tests', () => {
         width: -50,
         height: 50,
       };
-
       const result = await resizeImage(params);
-
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
     });
@@ -227,9 +211,7 @@ describe('Image Processor Utility Tests', () => {
         width: 50,
         height: 0,
       };
-
       const result = await resizeImage(params);
-
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
     });

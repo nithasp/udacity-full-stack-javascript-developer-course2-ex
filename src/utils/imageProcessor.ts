@@ -6,9 +6,6 @@ import {
   IProcessingResult,
 } from '../interfaces/IImageProcessor';
 
-/**
- * Supported image formats
- */
 export const SUPPORTED_FORMATS = [
   'jpg',
   'jpeg',
@@ -19,11 +16,6 @@ export const SUPPORTED_FORMATS = [
   'avif',
 ] as const;
 
-/**
- * Validates if a file exists at the given path
- * @param filePath - Path to check
- * @returns Promise<boolean> - True if file exists
- */
 export const fileExists = async (filePath: string): Promise<boolean> => {
   try {
     await fs.access(filePath);
@@ -33,11 +25,6 @@ export const fileExists = async (filePath: string): Promise<boolean> => {
   }
 };
 
-/**
- * Validates resize parameters
- * @param params - Resize parameters to validate
- * @returns Object with isValid flag and optional error message
- */
 export const validateResizeParams = (
   params: IResizeParams
 ): { isValid: boolean; error?: string } => {
@@ -63,10 +50,7 @@ export const validateResizeParams = (
   const heightNum = Number(height);
 
   if (isNaN(widthNum) || isNaN(heightNum)) {
-    return {
-      isValid: false,
-      error: 'Width and height must be valid numbers',
-    };
+    return { isValid: false, error: 'Width and height must be valid numbers' };
   }
 
   if (widthNum <= 0 || heightNum <= 0) {
@@ -79,10 +63,6 @@ export const validateResizeParams = (
   return { isValid: true };
 };
 
-/**
- * Creates directory if it doesn't exist
- * @param dirPath - Directory path to create
- */
 export const ensureDirectoryExists = async (dirPath: string): Promise<void> => {
   try {
     await fs.access(dirPath);
@@ -91,12 +71,6 @@ export const ensureDirectoryExists = async (dirPath: string): Promise<void> => {
   }
 };
 
-/**
- * Finds an image file with any supported extension
- * @param baseDir - Directory to search in
- * @param filename - Filename without extension
- * @returns Object with the full path and extension if found
- */
 export const findImageFile = async (
   baseDir: string,
   filename: string
@@ -110,59 +84,73 @@ export const findImageFile = async (
   return null;
 };
 
-/**
- * Gets the output format configuration for Sharp
- * @param format - Desired output format
- * @returns Sharp format options
- */
-export const getFormatOptions = (
+const getFormatOptions = (
   format: string
 ): { format: string; options: Record<string, unknown> } => {
-  switch (format.toLowerCase()) {
+  const normalizedFormat = format.toLowerCase();
+  const quality = { quality: 90 };
+
+  switch (normalizedFormat) {
     case 'jpg':
     case 'jpeg':
-      return { format: 'jpeg', options: { quality: 90 } };
+      return { format: 'jpeg', options: quality };
     case 'png':
       return { format: 'png', options: { compressionLevel: 9 } };
     case 'webp':
-      return { format: 'webp', options: { quality: 90 } };
+    case 'tiff':
+    case 'avif':
+      return { format: normalizedFormat, options: quality };
     case 'gif':
       return { format: 'gif', options: {} };
-    case 'tiff':
-      return { format: 'tiff', options: { quality: 90 } };
-    case 'avif':
-      return { format: 'avif', options: { quality: 90 } };
     default:
-      return { format: 'jpeg', options: { quality: 90 } };
+      return { format: 'jpeg', options: quality };
   }
 };
 
-/**
- * Resizes an image using Sharp library
- * Supports multiple input formats: jpg, jpeg, png, webp, gif, tiff, avif
- * @param params - Image resize parameters
- * @returns Promise<IProcessingResult> - Result of the processing operation
- */
+const applyFormat = async (
+  sharpInstance: sharp.Sharp,
+  format: string,
+  options: Record<string, unknown>,
+  outputPath: string
+): Promise<void> => {
+  switch (format) {
+    case 'jpeg':
+      await sharpInstance.jpeg(options as sharp.JpegOptions).toFile(outputPath);
+      break;
+    case 'png':
+      await sharpInstance.png(options as sharp.PngOptions).toFile(outputPath);
+      break;
+    case 'webp':
+      await sharpInstance.webp(options as sharp.WebpOptions).toFile(outputPath);
+      break;
+    case 'gif':
+      await sharpInstance.gif(options as sharp.GifOptions).toFile(outputPath);
+      break;
+    case 'tiff':
+      await sharpInstance.tiff(options as sharp.TiffOptions).toFile(outputPath);
+      break;
+    case 'avif':
+      await sharpInstance.avif(options as sharp.AvifOptions).toFile(outputPath);
+      break;
+    default:
+      await sharpInstance.jpeg(options as sharp.JpegOptions).toFile(outputPath);
+  }
+};
+
 export const resizeImage = async (
   params: IResizeParams
 ): Promise<IProcessingResult> => {
   try {
     const { filename, width, height, format } = params;
 
-    // Validate parameters
     const validation = validateResizeParams(params);
     if (!validation.isValid) {
-      return {
-        success: false,
-        error: validation.error,
-      };
+      return { success: false, error: validation.error };
     }
 
-    // Define base directory
     const fullDir = path.join(process.cwd(), 'assets', 'full');
     const thumbDir = path.join(process.cwd(), 'assets', 'thumb');
 
-    // Find the original image with any supported extension
     const imageFile = await findImageFile(fullDir, filename);
     if (!imageFile) {
       return {
@@ -171,35 +159,22 @@ export const resizeImage = async (
       };
     }
 
-    // Determine output format (use provided format or keep original)
     const outputFormat = format || imageFile.extension;
     const outputExt =
       outputFormat === 'jpeg' ? 'jpg' : outputFormat.toLowerCase();
-
-    // Define thumb path with format extension
     const thumbPath = path.join(
       thumbDir,
       `${filename}_${width}x${height}.${outputExt}`
     );
 
-    // Ensure thumb directory exists
     await ensureDirectoryExists(thumbDir);
 
-    // Check if resized image already exists (caching)
-    const thumbExists = await fileExists(thumbPath);
-    if (thumbExists) {
-      return {
-        success: true,
-        outputPath: thumbPath,
-        cached: true,
-      };
+    if (await fileExists(thumbPath)) {
+      return { success: true, outputPath: thumbPath, cached: true };
     }
 
-    // Get format-specific options
     const { format: sharpFormat, options: formatOptions } =
       getFormatOptions(outputFormat);
-
-    // Resize the image with the specified format
     const sharpInstance = sharp(imageFile.filePath).resize(
       Number(width),
       Number(height),
@@ -209,49 +184,9 @@ export const resizeImage = async (
       }
     );
 
-    // Apply format-specific conversion
-    switch (sharpFormat) {
-      case 'jpeg':
-        await sharpInstance
-          .jpeg(formatOptions as sharp.JpegOptions)
-          .toFile(thumbPath);
-        break;
-      case 'png':
-        await sharpInstance
-          .png(formatOptions as sharp.PngOptions)
-          .toFile(thumbPath);
-        break;
-      case 'webp':
-        await sharpInstance
-          .webp(formatOptions as sharp.WebpOptions)
-          .toFile(thumbPath);
-        break;
-      case 'gif':
-        await sharpInstance
-          .gif(formatOptions as sharp.GifOptions)
-          .toFile(thumbPath);
-        break;
-      case 'tiff':
-        await sharpInstance
-          .tiff(formatOptions as sharp.TiffOptions)
-          .toFile(thumbPath);
-        break;
-      case 'avif':
-        await sharpInstance
-          .avif(formatOptions as sharp.AvifOptions)
-          .toFile(thumbPath);
-        break;
-      default:
-        await sharpInstance
-          .jpeg(formatOptions as sharp.JpegOptions)
-          .toFile(thumbPath);
-    }
+    await applyFormat(sharpInstance, sharpFormat, formatOptions, thumbPath);
 
-    return {
-      success: true,
-      outputPath: thumbPath,
-      cached: false,
-    };
+    return { success: true, outputPath: thumbPath, cached: false };
   } catch (error) {
     return {
       success: false,
