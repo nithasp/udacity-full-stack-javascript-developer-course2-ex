@@ -15,6 +15,26 @@ describe('[integration] API Endpoint Tests', () => {
   );
   const thumbDir = path.join(process.cwd(), 'assets', 'thumb');
 
+  const safeDeleteFile = async (
+    filePath: string,
+    retries = 2
+  ): Promise<void> => {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        await fs.unlink(filePath);
+        return;
+      } catch {
+        if (attempt < retries) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, 100 * (attempt + 1))
+          );
+        } else {
+          console.warn(`Unable to delete ${path.basename(filePath)}`);
+        }
+      }
+    }
+  };
+
   beforeAll(async () => {
     const fullDir = path.join(process.cwd(), 'assets', 'full');
     await ensureDirectoryExists(fullDir);
@@ -40,16 +60,24 @@ describe('[integration] API Endpoint Tests', () => {
   });
 
   afterAll(async () => {
+    // Allow file handles to close before cleanup
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    // Clean up test image
+    await safeDeleteFile(testImagePath);
+
+    // Clean up thumbnail files
     try {
-      await fs.unlink(testImagePath);
       const thumbFiles = await fs.readdir(thumbDir);
-      for (const file of thumbFiles) {
-        if (file.startsWith('apitest_')) {
-          await fs.unlink(path.join(thumbDir, file));
-        }
-      }
-    } catch (error) {
-      // Ignore cleanup errors
+      const testThumbs = thumbFiles.filter((file) =>
+        file.startsWith('apitest_')
+      );
+
+      await Promise.all(
+        testThumbs.map((file) => safeDeleteFile(path.join(thumbDir, file)))
+      );
+    } catch {
+      // Thumb directory might not exist
     }
   });
 

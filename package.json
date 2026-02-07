@@ -12,7 +12,7 @@
     "test:unit": "npm run build:test && cross-env NODE_ENV=test jasmine --filter=unit",
     "test:integration": "npm run build:test && cross-env NODE_ENV=test jasmine --filter=integration",
     "jasmine": "cross-env NODE_ENV=test jasmine",
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint .",
     "format": "prettier --write \"src/**/*.ts\""
   },
   "keywords": [
@@ -32,10 +32,10 @@
     "@types/jasmine": "^5.1.4",
     "@types/node": "^20.11.16",
     "@types/supertest": "^6.0.2",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
     "cross-env": "^10.1.0",
-    "eslint": "^8.56.0",
+    "eslint": "^9.0.0",
     "eslint-config-prettier": "^9.1.0",
     "jasmine": "^5.1.0",
     "jasmine-spec-reporter": "^7.0.0",
@@ -43,6 +43,6 @@
     "prettier": "^3.2.5",
     "supertest": "^6.3.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.9.3"
   }
 }
